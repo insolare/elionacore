@@ -4,13 +4,12 @@ import (
 	"context"
 	"errors"
 
-	"github.com/eliona-smart-building-assistant/go-utils/log"
 	"github.com/insolare/elionacore/domain/types"
 )
 
 // HandleFunc is a handler called for each message received over Kafka.
 // If returned error is nil - offset is marked as committed.
-type HandleFunc func(m types.Message) error
+type HandleFunc func(m types.Message)
 
 func (c *Client) consumeSimple(handler HandleFunc) {
 	c.logger.Info(c.facility, "Simple consumer")
@@ -44,10 +43,7 @@ func (c *Client) consumeSimple(handler HandleFunc) {
 				Value: rec.Value,
 			}
 
-			err := handler(m)
-			if err != nil {
-				log.Error(c.facility, "Error in handler function: %v", err)
-			}
+			handler(m)
 
 			c.client.MarkCommitRecords(rec)
 		}

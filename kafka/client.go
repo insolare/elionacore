@@ -26,10 +26,12 @@ type Client struct {
 }
 
 type ClientConfig struct {
-	Seeds    []string
-	Group    string
-	ClientID string
-	Logger   types.Logger
+	Seeds       []string
+	Group       string
+	ClientID    string
+	Logger      types.Logger
+	HandlerFn   HandleFunc
+	HandleAsync bool
 }
 
 var globalClient *Client
@@ -37,7 +39,7 @@ var globalClient *Client
 // TODO: Make initialization of _default_ client
 func Init() {}
 
-func NewClient(ctx context.Context, cfg ClientConfig, fn HandleFunc) (*Client, error) {
+func NewClient(ctx context.Context, cfg ClientConfig) (*Client, error) {
 	opts := make([]kgo.Opt, 0)
 	opts = append(opts, kgo.BlockRebalanceOnPoll(), kgo.AutoCommitMarks())
 
@@ -80,24 +82,31 @@ func NewClient(ctx context.Context, cfg ClientConfig, fn HandleFunc) (*Client, e
 
 	clientCtx, cancel := context.WithCancel(ctx)
 	client := &Client{
-		ctx:    clientCtx,
-		cancel: cancel,
-		client: franz,
-		wg:     sync.WaitGroup{},
-		stop:   make(chan struct{}),
-		//logger: types.NoopLogger{},
+		ctx:      clientCtx,
+		cancel:   cancel,
+		client:   franz,
+		wg:       sync.WaitGroup{},
+		stop:     make(chan struct{}),
 		facility: facility + ":" + cfg.ClientID,
 	}
 
 	// TODO: Select actual consumer type here
 	client.wg.Add(1)
-	go client.consumeSimple(fn)
+	go client.consumeSimple(messageHandler(cfg.HandlerFn, cfg.HandleAsync))
 
 	return client, nil
 }
 
-func (c *Client) Init(cfg ClientConfig) error {
-	return nil
+func messageHandler(fn HandleFunc, async bool) HandleFunc {
+	if async {
+		return func(m types.Message) {
+			go fn(m)
+		}
+	}
+
+	return func(m types.Message) {
+		fn(m)
+	}
 }
 
 func Subscribe(topics ...string) {
@@ -130,6 +139,15 @@ func (c *Client) Produce(msg ...types.Message) {
 		r.Topic = msg[i].Topic
 		// TODO: Headers!
 		c.client.Produce(c.ctx, r, nil)
+	}
+}
+
+func (c *Client) produceCallback(r *kgo.Record, err error) {
+	if err != nil {
+		c.logger.Error(c.facility, "Error producing message to '%s': %v",
+			r.Topic, err)
+	} else {
+		c.logger.Trace(c.facility, "Message delivered to '%s'", r.Topic)
 	}
 }
 
