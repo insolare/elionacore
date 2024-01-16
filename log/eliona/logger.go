@@ -31,7 +31,7 @@ func (l Logger) Trace(facility string, message string, params ...any) {
 }
 
 func (l Logger) Debug(facility string, message string, params ...any) {
-	l.logger.Fatal(facility, message, params...)
+	l.logger.Debug(facility, message, params...)
 }
 
 func (l Logger) Error(facility string, message string, params ...any) {
@@ -39,9 +39,9 @@ func (l Logger) Error(facility string, message string, params ...any) {
 }
 
 func (l Logger) Warning(facility string, message string, params ...any) {
-	l.logger.Fatal(facility, message, params...)
+	l.logger.Warn(facility, message, params...)
 }
 
 func (l Logger) Info(facility string, message string, params ...any) {
-	l.logger.Fatal(facility, message, params...)
+	l.logger.Info(facility, message, params...)
 }
