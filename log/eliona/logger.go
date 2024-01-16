@@ -15,7 +15,7 @@ func NewLogger() Logger {
 	l := log.New(os.Stdout)
 	l.SetLevel(log.InfoLevel)
 
-	return Logger{}
+	return Logger{l}
 }
 
 func (l Logger) SetLevel(level int) {
