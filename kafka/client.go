@@ -87,6 +87,7 @@ func NewClient(ctx context.Context, cfg ClientConfig) (*Client, error) {
 		client:   franz,
 		wg:       sync.WaitGroup{},
 		stop:     make(chan struct{}),
+		logger:   logger,
 		facility: facility + ":" + cfg.ClientID,
 	}
 
