@@ -131,7 +131,7 @@ func (c *Client) Unsubscribe(topics ...string) {
 }
 
 func (c *Client) Produce(msg ...types.Message) {
-	if !c.closing {
+	if c.closing {
 		return
 	}
 

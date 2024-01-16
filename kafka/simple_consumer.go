@@ -12,7 +12,7 @@ import (
 type HandleFunc func(m types.Message)
 
 func (c *Client) consumeSimple(handler HandleFunc) {
-	c.logger.Info(c.facility, "Simple consumer")
+	c.logger.Info(c.facility, "Simple consumer started")
 	defer c.logger.Info(c.facility, "Simple consumer stopped")
 
 	defer c.wg.Done()
