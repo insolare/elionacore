@@ -9,7 +9,7 @@ import (
 
 // HandleFunc is a handler called for each message received over Kafka.
 // If returned error is nil - offset is marked as committed.
-type HandleFunc func(m types.Message)
+type HandleFunc func(*Client, types.Message)
 
 func (c *Client) consumeSimple(handler HandleFunc) {
 	c.logger.Info(c.facility, "Simple consumer started")
@@ -43,7 +43,7 @@ func (c *Client) consumeSimple(handler HandleFunc) {
 				Value: rec.Value,
 			}
 
-			handler(m)
+			handler(c, m)
 
 			c.client.MarkCommitRecords(rec)
 		}

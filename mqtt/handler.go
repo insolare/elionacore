@@ -5,7 +5,7 @@ import (
 	"github.com/insolare/elionacore/domain/types"
 )
 
-type HandleFunc func(m types.Message)
+type HandleFunc func(types.Message)
 
 func makeMqttHandler(handler HandleFunc) paho3.MessageHandler {
 	return func(_ paho3.Client, m paho3.Message) {

@@ -93,20 +93,20 @@ func NewClient(ctx context.Context, cfg ClientConfig) (*Client, error) {
 
 	// TODO: Select actual consumer type here
 	client.wg.Add(1)
-	go client.consumeSimple(messageHandler(cfg.HandlerFn, cfg.HandleAsync))
+	go client.consumeSimple(messageHandler(client, cfg.HandlerFn, cfg.HandleAsync))
 
 	return client, nil
 }
 
-func messageHandler(fn HandleFunc, async bool) HandleFunc {
+func messageHandler(c *Client, fn HandleFunc, async bool) HandleFunc {
 	if async {
-		return func(m types.Message) {
-			go fn(m)
+		return func(client *Client, m types.Message) {
+			go fn(client, m)
 		}
 	}
 
-	return func(m types.Message) {
-		fn(m)
+	return func(client *Client, m types.Message) {
+		fn(c, m)
 	}
 }
 
